@@ -102,8 +102,8 @@ export const core: Record<string, [string, string]> = {
     'Here you will finally see how long each salesperson takes to contact a lead after you assign it, how many book an appointment and how many close — all measured with the same yardstick. Messages go out through the WhatsApp API with approved templates, so your number stops getting blocked, and when a customer buys, the plates, paperwork and referral follow-up goes out on its own at days 0, 7 and 14.',
   ],
   'welcome.parrafo2': [
-    'También ves de qué anuncio viene cada una de las ~100 consultas diarias, cuáles califican, cómo se reparten solas entre tus 8 closers y cuánto cash trae cada uno.',
-    'You also see which ad each of the ~100 daily inquiries comes from, which ones qualify, how they are automatically split among your 8 closers and how much cash each one brings in.',
+    'También ves de qué anuncio viene cada una de las ~100 consultas diarias, cuáles califican, cómo se reparten solas entre tus 4 closers y cuánto cash trae cada uno.',
+    'You also see which ad each of the ~100 daily inquiries comes from, which ones qualify, how they are automatically split among your 4 closers and how much cash each one brings in.',
   ],
   'welcome.italica': ['Si te gusta lo que ves, hacé clic en “Quiero arrancar” y arrancamos.', 'If you like what you see, click “Let’s start” and we get going.'],
   'welcome.verPlataforma': ['Ver la plataforma', 'See the platform'],
@@ -178,7 +178,7 @@ export const core: Record<string, [string, string]> = {
 
   /* dashboard */
   'dash.titulo': ['Rendimiento del equipo comercial', 'Sales team performance'],
-  'dash.sub': ['Los 8 closers medidos con la misma vara: velocidad, agenda, cierre, mensajes, ventas y cash.', 'All 8 closers measured with the same yardstick: speed, booking, closing, messages, sales and cash.'],
+  'dash.sub': ['Los 4 closers medidos con la misma vara: velocidad, agenda, cierre, mensajes, ventas y cash.', 'All 4 closers measured with the same yardstick: speed, booking, closing, messages, sales and cash.'],
   'dash.ranking': ['Ranking del equipo', 'Team ranking'],
   'dash.rankingSub': ['Tocá un encabezado para ordenar · tocá una fila para ver la ficha', 'Tap a header to sort · tap a row to open the profile'],
   'dash.sobrePromedio': ['sobre el promedio', 'above average'],

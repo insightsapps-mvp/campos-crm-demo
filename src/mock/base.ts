@@ -22,10 +22,6 @@ export const vendedores: Vendedor[] = [
   { id: 'v2', nombre: 'Carlos Ibáñez', avatar: 'CI', color: '#60a5fa', bdc: 'BDC Sur', activo: true, email: 'carlos@camposcrm.demo', ultimoAcceso: NOW - 12 * MIN },
   { id: 'v3', nombre: 'Valeria Méndez', avatar: 'VM', color: '#a78bfa', bdc: 'BDC Norte', activo: true, email: 'valeria@camposcrm.demo', ultimoAcceso: NOW - 40 * MIN },
   { id: 'v4', nombre: 'Kevin Brooks', avatar: 'KB', color: '#f87171', bdc: 'BDC Sur', activo: true, email: 'kevin@camposcrm.demo', ultimoAcceso: NOW - 5 * HOUR },
-  { id: 'v5', nombre: 'Andrés Salazar', avatar: 'AS', color: '#34d399', bdc: 'BDC Norte', activo: true, email: 'andres@camposcrm.demo', ultimoAcceso: NOW - 25 * MIN },
-  { id: 'v6', nombre: 'Ashley Turner', avatar: 'AT', color: '#f59e0b', bdc: 'BDC Sur', activo: true, email: 'ashley@camposcrm.demo', ultimoAcceso: NOW - 2 * HOUR },
-  { id: 'v7', nombre: 'Luis Fernández', avatar: 'LF', color: '#fb7185', bdc: 'BDC Norte', activo: true, email: 'luis@camposcrm.demo', ultimoAcceso: NOW - 55 * MIN },
-  { id: 'v8', nombre: 'Mariana Ortiz', avatar: 'MO', color: '#2dd4bf', bdc: 'BDC Sur', activo: true, email: 'mariana@camposcrm.demo', ultimoAcceso: NOW - 18 * MIN },
 ]
 
 export const DANIELA_ID = 'v1'
@@ -51,10 +47,6 @@ export const perfiles: Record<string, Perfil> = {
   v2: { medianaMin: 8, sigma: 0.6, pAgenda: 0.43, pShow: 0.82, pCierre: 0.41, margen: 0.106, pSinResp: 0.06, peso: 1.12 },
   v3: { medianaMin: 6, sigma: 0.55, pAgenda: 0.41, pShow: 0.8, pCierre: 0.12, margen: 0.071, pSinResp: 0.05, peso: 1.0 },
   v4: { medianaMin: 125, sigma: 0.5, pAgenda: 0.24, pShow: 0.74, pCierre: 0.3, margen: 0.093, pSinResp: 0.32, peso: 1.0 },
-  v5: { medianaMin: 12, sigma: 0.65, pAgenda: 0.33, pShow: 0.79, pCierre: 0.3, margen: 0.098, pSinResp: 0.1, peso: 0.95 },
-  v6: { medianaMin: 15, sigma: 0.65, pAgenda: 0.31, pShow: 0.78, pCierre: 0.3, margen: 0.091, pSinResp: 0.12, peso: 0.95 },
-  v7: { medianaMin: 11, sigma: 0.6, pAgenda: 0.33, pShow: 0.8, pCierre: 0.31, margen: 0.1, pSinResp: 0.09, peso: 0.95 },
-  v8: { medianaMin: 13, sigma: 0.6, pAgenda: 0.34, pShow: 0.8, pCierre: 0.3, margen: 0.097, pSinResp: 0.1, peso: 0.9 },
 }
 
 export const campanas: Campana[] = [

@@ -91,7 +91,7 @@ export default function Dashboard() {
   const alertas = useMemo(() => {
     const now = Date.now()
     const sinContacto = leads.filter((l) => l.estado === 'asignado' && l.asignadoAt && now - l.asignadoAt > 30 * 60_000)
-    const sinResp = leads.filter((l) => l.msgsSinResponder > 0 && l.vendedorId && ['contactado', 'agendado', 'negociacion'].includes(l.estado) && (l.primerContactoAt ?? 0) > now - 10 * DAY)
+    const sinResp = leads.filter((l) => l.msgsSinResponder > 0 && l.vendedorId && ['contactado', 'agendado', 'negociacion'].includes(l.estado) && (l.primerContactoAt ?? 0) > now - 2 * DAY)
     const citasHoy = leads.filter((l) => l.citaAt && isSameDay(l.citaAt, now))
     const porConfirmar = citasHoy.filter((l) => l.citaAt! > now && estadoCita(l) === 'pendiente')
     const vencidos = leads.flatMap((l) => l.seguimientos.filter((s) => !s.hecho && s.at < now).map(() => l))

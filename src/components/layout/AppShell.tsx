@@ -2,6 +2,7 @@ import * as DM from '@radix-ui/react-dropdown-menu'
 import { ArrowLeft, ChevronDown, LogOut, Menu, MoreHorizontal, Sparkles, X } from 'lucide-react'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { LeadDrawer } from '@/components/lead/LeadDrawer'
 import { Avatar, Sheet } from '@/components/ui'
 import { useT } from '@/i18n'
 import { cn } from '@/lib/utils'
@@ -33,7 +34,7 @@ const isActive = (item: NavItem, pathname: string) => {
 function TopNavItem({ item, active, onGo }: { item: NavItem; active: boolean; onGo: (p: string) => void }) {
   const { t } = useT()
   const base = cn(
-    'relative flex h-10 items-center gap-1.5 whitespace-nowrap rounded-[9px] px-3 text-[13.5px] font-semibold transition',
+    'relative flex h-10 items-center gap-1.5 whitespace-nowrap rounded-[9px] px-2.5 text-[13px] font-semibold transition xl:px-3 xl:text-[13.5px]',
     active ? 'bg-[rgba(59,130,246,.12)] text-accent shadow-[0_0_24px_rgba(59,130,246,.18)]' : 'text-fg2 hover:bg-surface2 hover:text-fg',
   )
   const underline = active && <span className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-accent" />
@@ -133,12 +134,12 @@ function TourButton({ compact }: { compact?: boolean }) {
       onClick={() => setTourOpen(true)}
       className={cn(
         'inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-[9px] border border-accent/30 bg-[rgba(59,130,246,.1)] text-[13px] font-semibold text-accent transition hover:bg-[rgba(59,130,246,.18)]',
-        compact ? 'w-10' : 'w-10 xl:w-auto xl:px-3',
+        compact ? 'w-10' : 'w-10 2xl:w-auto 2xl:px-3',
       )}
       title={t('topbar.tour')}
     >
       <Sparkles size={16} />
-      {!compact && <span className="hidden xl:inline">{t('topbar.tour')}</span>}
+      {!compact && <span className="hidden 2xl:inline">{t('topbar.tour')}</span>}
     </button>
   )
 }
@@ -152,19 +153,19 @@ function TopBar() {
   const overflow = items.filter((i) => i.overflow)
   return (
     <header className="sticky top-0 z-50 hidden h-16 border-b border-line bg-[var(--glass)] backdrop-blur-xl lg:block">
-      <div className="mx-auto flex h-full max-w-[1480px] items-center gap-3 px-5 xl:px-8">
+      <div className="mx-auto flex h-full max-w-[1600px] items-center gap-3 px-4 xl:px-6">
         <button onClick={() => go(role === 'admin' ? '/dashboard' : '/mi-panel')} className="shrink-0" aria-label="Campos CRM">
           <Logo className="xl:hidden" compact />
           <Logo className="hidden xl:flex" />
         </button>
         <nav data-tour="top-nav" className="mx-auto flex min-w-0 items-center gap-0.5">
           {items.map((it) => (
-            <div key={it.id} className={cn(it.overflow && 'hidden xl:block')}>
+            <div key={it.id} className={cn(it.overflow && 'hidden 2xl:block')}>
               <TopNavItem item={it} active={isActive(it, pathname)} onGo={go} />
             </div>
           ))}
           {overflow.length > 0 && (
-            <div className="xl:hidden">
+            <div className="2xl:hidden">
               <DM.Root modal={false}>
                 <DM.Trigger asChild>
                   <button
@@ -192,7 +193,7 @@ function TopBar() {
         </nav>
         <div className="flex shrink-0 items-center gap-2">
           <TourButton />
-          <LangToggle />
+          <LangToggle compactBelowXl />
           <ThemeToggle />
           <RoleSwitch />
           <WhatsAppCta iconOnlyBelowXl />
@@ -418,6 +419,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <DesktopFooter />
       <BottomNav onMore={open} />
       <MoreSheet open={more} onClose={close} />
+      <LeadDrawer />
     </div>
   )
 }

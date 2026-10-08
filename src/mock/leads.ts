@@ -177,9 +177,9 @@ function makeLead(creadoAt: number, forceQualified: boolean | null): Lead {
       const n: Nota = { id: uid('n'), at, autorId: v.id, texto: pick(notasPool) }
       lead.notas.push(n)
     }
-    if (r() < 0.55) {
+    if (r() < 0.22) {
       const s: Seguimiento = {
-        id: uid('s'), at: horaComercial(NOW + between(0.1, 4) * DAY), titulo: pick(seguimientoPool),
+        id: uid("s"), at: r() < 0.1 && NOW - contactoAt < 6 * DAY ? NOW - between(1, 20) * HOUR : horaComercial(NOW + between(0.1, 5) * DAY), titulo: pick(seguimientoPool),
         canal: pick(['whatsapp', 'llamada', 'visita']), recordatorio: true, hecho: false,
       }
       lead.seguimientos.push(s)
@@ -238,8 +238,8 @@ function casosBorde(leads: Lead[]) {
   recent(DANIELA_ID, 41, 'Ricardo Vargas', 'Honda CR-V 2024', 'c1')
   recent(DANIELA_ID, 14, 'Megan Clark', 'Toyota Camry 2024', 'c3')
   recent(DANIELA_ID, 3, 'Héctor Aguilar', 'Chevrolet Equinox 2024', 'c6')
-  recent('v6', 22, 'Amanda White', 'Kia Sportage 2024', 'c2')
-  recent('v8', 9, 'Óscar Medina', 'Nissan Rogue 2024', 'c5')
+  recent('v3', 22, 'Amanda White', 'Kia Sportage 2024', 'c2')
+  recent('v2', 9, 'Óscar Medina', 'Nissan Rogue 2024', 'c5')
 }
 
 export const leadsIniciales: Lead[] = (() => {

@@ -39,15 +39,15 @@ export function ThemeToggle() {
   )
 }
 
-export function LangToggle({ compactOnMobile }: { compactOnMobile?: boolean }) {
+export function LangToggle({ compactOnMobile, compactBelowXl }: { compactOnMobile?: boolean; compactBelowXl?: boolean }) {
   const lang = useApp((s) => s.lang)
   const setLang = useApp((s) => s.setLang)
   return (
     <>
-      {compactOnMobile && (
+      {(compactOnMobile || compactBelowXl) && (
         <button
           onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
-          className="mono grid h-10 w-10 shrink-0 place-items-center rounded-[9px] border border-line bg-surface2 text-[12px] font-bold text-fg sm:hidden"
+          className={cn('mono grid h-10 w-10 shrink-0 place-items-center rounded-[9px] border border-line bg-surface2 text-[12px] font-bold text-fg', compactBelowXl ? 'xl:hidden' : 'sm:hidden')}
           aria-label="ES/EN"
         >
           {lang.toUpperCase()}
@@ -55,7 +55,7 @@ export function LangToggle({ compactOnMobile }: { compactOnMobile?: boolean }) {
       )}
       <Segmented
         size="sm"
-        className={cn(compactOnMobile && 'hidden sm:inline-flex')}
+        className={cn(compactOnMobile && 'hidden sm:inline-flex', compactBelowXl && 'hidden xl:inline-flex')}
         value={lang}
         onChange={setLang}
         options={[
@@ -110,13 +110,13 @@ export function WhatsAppCta({ iconOnlyBelowXl, className, label }: { iconOnlyBel
       rel="noreferrer"
       className={cn(
         'inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[9px] bg-accent px-3.5 text-[13px] font-semibold text-white transition hover:bg-accent-strong hover:shadow-glow',
-        iconOnlyBelowXl && 'w-10 px-0 xl:w-auto xl:px-3.5',
+        iconOnlyBelowXl && 'w-10 px-0 2xl:w-auto 2xl:px-3.5',
         className,
       )}
       title={t('cta.quieroArrancar')}
     >
       <MessageCircle size={16} />
-      <span className={cn(iconOnlyBelowXl && 'hidden xl:inline')}>{label ?? t('cta.quieroArrancar')}</span>
+      <span className={cn(iconOnlyBelowXl && 'hidden 2xl:inline')}>{label ?? t('cta.quieroArrancar')}</span>
     </a>
   )
 }

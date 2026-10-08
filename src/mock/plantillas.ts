@@ -108,9 +108,9 @@ export const reglasRepartoIniciales: ReglasReparto = {
   closers: vendedores.map((v) => ({
     vendedorId: v.id,
     activo: true,
-    cupoDiario: v.id === 'v4' ? 4 : v.id === 'v1' || v.id === 'v2' ? 8 : 6,
-    peso: v.id === 'v1' ? 18 : v.id === 'v2' ? 16 : v.id === 'v4' ? 8 : 10 + (v.id.charCodeAt(1) % 3),
-    segmentos: v.id === 'v2' || v.id === 'v8' ? ['pickup', 'suv'] : v.id === 'v3' || v.id === 'v7' ? ['usado', 'sedan'] : ['suv', 'sedan', 'pickup', 'usado'],
+    cupoDiario: v.id === 'v4' ? 10 : v.id === 'v1' ? 18 : v.id === 'v2' ? 16 : 14,
+    peso: v.id === 'v1' ? 18 : v.id === 'v2' ? 16 : v.id === 'v4' ? 8 : 12,
+    segmentos: v.id === 'v2' ? ['pickup', 'suv'] : v.id === 'v3' ? ['usado', 'sedan', 'suv'] : ['suv', 'sedan', 'pickup', 'usado'],
   })),
 }
 
