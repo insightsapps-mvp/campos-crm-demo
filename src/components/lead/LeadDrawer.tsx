@@ -11,6 +11,7 @@ import type { Evento } from '@/mock/types'
 import { useApp } from '@/store/app'
 import { useData } from '@/store/data'
 import { useUI } from '@/store/ui'
+import { previewMsg } from '@/components/chat/Bubble'
 import { CitaButtons, EstadoBadge, EtapaSelector, NotasBlock, RegistrarLlamadaBtn, SeguimientosBlock } from './LeadActions'
 
 const evIcon: Partial<Record<Evento['tipo'], typeof CircleDot>> = {
@@ -193,7 +194,7 @@ export function LeadDrawer() {
           <div className="space-y-1.5">
             {msgs.map((m) => (
               <div key={m.id} className={cn('max-w-[85%] rounded-[10px] px-3 py-1.5 text-[12.5px]', m.direccion === 'out' ? 'ml-auto bg-[rgba(59,130,246,.14)]' : 'bg-surface2')}>
-                {b(m.texto)}
+                {previewMsg(m, t, b)}
                 <div className="mt-0.5 text-right text-[10px] text-muted">{fmtRel(m.at, lang)}</div>
               </div>
             ))}

@@ -1,11 +1,11 @@
 import * as DM from '@radix-ui/react-dropdown-menu'
-import { ChevronLeft, ChevronRight, FileUp, LayoutGrid, MoreVertical, Plus, Search, Table2, UploadCloud, UserPlus, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileUp, LayoutGrid, MoreVertical, Plus, Search, StickyNote, Table2, UploadCloud, UserPlus, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useCloserId } from '@/components/layout/AppShell'
 import { PreviewBanner } from '@/components/layout/Notices'
-import { EstadoBadge, RegistrarLlamadaBtn } from '@/components/lead/LeadActions'
+import { EstadoBadge, NotasBlock, RegistrarLlamadaBtn } from '@/components/lead/LeadActions'
 import { Avatar, Badge, Button, Card, Empty, LiveTimer, Modal, PageHeader, Segmented, Select, Tabs } from '@/components/ui'
 import { tr, useT } from '@/i18n'
 import { fmtRel } from '@/lib/format'
@@ -203,10 +203,61 @@ function ImportarModal({ open, onClose }: { open: boolean; onClose: () => void }
   )
 }
 
+/** Última nota + acceso rápido para agregar otra */
+function NotaCelda({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
+  const { t, b, lang } = useT()
+  const ultima = lead.notas[0]
+  return (
+    <button onClick={onOpen} className="group flex min-h-[44px] w-full max-w-[260px] items-center gap-2 rounded-lg px-2 py-1 text-left hover:bg-surface2">
+      <StickyNote size={15} className={cn('shrink-0', ultima ? 'text-warn' : 'text-muted group-hover:text-accent')} />
+      {ultima ? (
+        <span className="min-w-0 flex-1">
+          <span className="line-clamp-1 text-[12.5px]">{b(ultima.texto)}</span>
+          <span className="text-[11px] text-muted">
+            {fmtRel(ultima.at, lang)}
+            {lead.notas.length > 1 && ` · ${t('leads.masNotas', { n: lead.notas.length - 1 })}`}
+          </span>
+        </span>
+      ) : (
+        <span className="text-[12.5px] font-medium text-fg2 group-hover:text-accent">+ {t('leads.agregarNota')}</span>
+      )}
+    </button>
+  )
+}
+
+const SUGERENCIAS = ['leads.sug.1', 'leads.sug.2', 'leads.sug.3', 'leads.sug.4', 'leads.sug.5']
+
+function NotasModal({ leadId, onClose }: { leadId: string | null; onClose: () => void }) {
+  const { t } = useT()
+  const lead = useData((s) => s.leads.find((l) => l.id === leadId))
+  const role = useApp((s) => s.role)
+  const openLead = useUI((s) => s.openLead)
+  if (!lead) return null
+  return (
+    <Modal open={!!lead} onClose={onClose} width={520} title={t('leads.notasDe', { n: lead.nombre })}>
+      <div className="space-y-3 p-5">
+        <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-fg2">
+          <EstadoBadge e={lead.estado} /> {lead.vehiculoInteres} · <span className="mono">{lead.telefono}</span>
+        </div>
+        <NotasBlock lead={lead} autorId={role === 'admin' ? 'admin' : lead.vendedorId ?? 'admin'} sugerencias={SUGERENCIAS.map((k) => t(k))} />
+        <button
+          onClick={() => {
+            onClose()
+            openLead(lead.id)
+          }}
+          className="h-10 text-[12.5px] font-semibold text-accent hover:underline"
+        >
+          {t('leads.verFicha')}
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
 type Tab = 'todos' | 'calificados' | 'no_calificados' | 'sin_contacto'
 
 export default function Leads() {
-  const { t, lang } = useT()
+  const { t, b, lang } = useT()
   const role = useApp((s) => s.role)
   const closerId = useCloserId()
   const leads = useData((s) => s.leads)
@@ -226,6 +277,7 @@ export default function Leads() {
   const [mAsignar, setMAsignar] = useState(false)
   const [mNuevo, setMNuevo] = useState(false)
   const [mImport, setMImport] = useState(false)
+  const [notaId, setNotaId] = useState<string | null>(null)
   const esCloser = !!closerId
 
   useEffect(() => {
@@ -384,7 +436,7 @@ export default function Leads() {
                     <th className="label-up px-2 py-2">{t('leads.col.estado')}</th>
                     {!esCloser && <th className="label-up px-2 py-2">{t('lead.responsable')}</th>}
                     <th className="label-up hidden px-2 py-2 lg:table-cell">{t('leads.col.antiguedad')}</th>
-                    <th className="label-up hidden px-2 py-2 xl:table-cell">{t('leads.col.actividad')}</th>
+                    <th className="label-up hidden px-2 py-2 md:table-cell">{t('leads.col.notas')}</th>
                     <th className="w-12" />
                   </tr>
                 </thead>
@@ -411,7 +463,9 @@ export default function Leads() {
                       <td className="hidden px-2 py-2 lg:table-cell">
                         {l.estado === 'asignado' && l.asignadoAt ? <LiveTimer since={l.asignadoAt} /> : <span className="text-[12.5px] text-fg2">{fmtRel(l.creadoAt, lang)}</span>}
                       </td>
-                      <td className="hidden px-2 py-2 text-[12.5px] text-fg2 xl:table-cell">{fmtRel(l.historial[l.historial.length - 1]?.at ?? l.creadoAt, lang)}</td>
+                      <td className="hidden px-2 py-2 md:table-cell" onClick={(e) => e.stopPropagation()}>
+                        <NotaCelda lead={l} onOpen={() => setNotaId(l.id)} />
+                      </td>
                       <td className="px-1 py-1" onClick={(e) => e.stopPropagation()}>
                         <DM.Root modal={false}>
                           <DM.Trigger asChild>
@@ -451,7 +505,13 @@ export default function Leads() {
                       {!esCloser ? resp(l) : <span />}
                       {l.estado === 'asignado' && l.asignadoAt ? <LiveTimer since={l.asignadoAt} /> : <span className="text-[11.5px] text-muted">{fmtRel(l.creadoAt, lang)}</span>}
                     </div>
-                    {l.estado === 'asignado' && <div className="mt-2" onClick={(e) => e.stopPropagation()}><RegistrarLlamadaBtn lead={l} /></div>}
+                    {l.notas[0] && <p className="mt-2 line-clamp-2 rounded-lg bg-surface2/60 px-2.5 py-1.5 text-[12px] text-fg2">📝 {b(l.notas[0].texto)}</p>}
+                    <div className="mt-2 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Button size="sm" variant="secondary" onClick={() => setNotaId(l.id)}>
+                        <StickyNote size={15} /> {l.notas.length ? t('leads.notaN', { n: l.notas.length }) : t('leads.agregarNota')}
+                      </Button>
+                      {l.estado === 'asignado' && <RegistrarLlamadaBtn lead={l} />}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -480,6 +540,7 @@ export default function Leads() {
         </div>
       )}
 
+      <NotasModal leadId={notaId} onClose={() => setNotaId(null)} />
       <AsignarModal ids={[...sel]} open={mAsignar} onClose={() => setMAsignar(false)} onDone={() => setSel(new Set())} />
       <NuevoLeadModal open={mNuevo} onClose={() => setMNuevo(false)} />
       <ImportarModal open={mImport} onClose={() => setMImport(false)} />

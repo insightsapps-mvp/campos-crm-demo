@@ -1,12 +1,14 @@
-import { ArrowLeft, Bell, Check, CheckCheck, FileText, IdCard, Lock, MessageCircle, Search, Send, ShieldCheck, StickyNote, Zap } from 'lucide-react'
+import { ArrowLeft, Bell, Eye, FileText, IdCard, MessageCircle, Search, Send, StickyNote } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { Bubble, Ticks, previewMsg } from '@/components/chat/Bubble'
+import { Composer } from '@/components/chat/Composer'
 import { useCloserId } from '@/components/layout/AppShell'
 import { DevNotice, PreviewBanner } from '@/components/layout/Notices'
 import { CitaButtons, EstadoBadge, EtapaSelector, NotasBlock, SeguimientoModal, SeguimientosBlock } from '@/components/lead/LeadActions'
-import { Avatar, Badge, Button, Drawer, Empty, InfoPop, Modal, PageHeader, Select, TapPop } from '@/components/ui'
+import { Avatar, Badge, Button, Drawer, Empty, InfoPop, Modal, PageHeader, TapPop } from '@/components/ui'
 import { tr, useT } from '@/i18n'
-import { fmtFechaHora, fmtHora, fmtRel, fmtUSD } from '@/lib/format'
+import { fmtFechaHora, fmtRel, fmtUSD } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { HOUR, campanas, vendedorById, vendedores } from '@/mock/base'
 import { rellenar } from '@/mock/mensajes'
@@ -16,12 +18,6 @@ import { useData } from '@/store/data'
 import { useUI } from '@/store/ui'
 
 const L = () => useApp.getState().lang
-
-function Ticks({ m }: { m: Mensaje }) {
-  if (m.direccion === 'in') return null
-  if (m.estado === 'enviado') return <Check size={14} className="text-muted" />
-  return <CheckCheck size={14} className={m.estado === 'leido' ? 'text-[#53bdeb]' : 'text-muted'} />
-}
 
 function PlantillaPicker({ lead, open, onClose }: { lead: Lead; open: boolean; onClose: () => void }) {
   const { t, b, lang } = useT()
@@ -146,7 +142,7 @@ function Ficha({ lead }: { lead: Lead }) {
   )
 }
 
-type Filtro = 'mias' | 'sin_responder' | 'con_cita'
+type Filtro = 'mias' | 'abiertas' | 'sin_responder' | 'con_cita'
 
 export default function WhatsApp() {
   const { t, b, lang } = useT()
@@ -154,7 +150,6 @@ export default function WhatsApp() {
   const closerId = useCloserId()
   const leads = useData((s) => s.leads)
   const mensajes = useData((s) => s.mensajes)
-  const send = useData((s) => s.sendMessage)
   const chatLeadId = useUI((s) => s.chatLeadId)
   const openChat = useUI((s) => s.openChat)
   const [filtro, setFiltro] = useState<Filtro>('mias')
@@ -162,7 +157,6 @@ export default function WhatsApp() {
   const [q, setQ] = useState('')
   const [sel, setSel] = useState<string | null>(chatLeadId)
   const [mobileChat, setMobileChat] = useState(!!chatLeadId)
-  const [txt, setTxt] = useState('')
   const [picker, setPicker] = useState(false)
   const [ficha, setFicha] = useState(false)
   const [seg, setSeg] = useState(false)
@@ -198,9 +192,17 @@ export default function WhatsApp() {
       .map((l) => {
         const ms = porLead.get(l.id) ?? []
         const last = ms[ms.length - 1]
-        return { lead: l, last, pendiente: !!last && last.direccion === 'in' }
+        const lastIn = [...ms].reverse().find((m) => m.direccion === 'in')
+        const abierta = !!lastIn && lastIn.at + 24 * HOUR > Date.now()
+        return { lead: l, last, abierta, pendiente: !!last && last.direccion === 'in' }
       })
-      .filter((c) => filtro === 'mias' || (filtro === 'sin_responder' && c.pendiente) || (filtro === 'con_cita' && c.lead.citaAt && c.lead.citaAt > Date.now()))
+      .filter(
+        (c) =>
+          filtro === 'mias' ||
+          (filtro === 'abiertas' && c.abierta) ||
+          (filtro === 'sin_responder' && c.pendiente) ||
+          (filtro === 'con_cita' && c.lead.citaAt && c.lead.citaAt > Date.now()),
+      )
       .filter((c) => !q || c.lead.nombre.toLowerCase().includes(q.toLowerCase()))
       .sort((a, b2) => (b2.last?.at ?? 0) - (a.last?.at ?? 0))
   }, [porLead, leads, closerId, vid, filtro, q, sel])
@@ -213,19 +215,21 @@ export default function WhatsApp() {
   const hilo = (sel && porLead.get(sel)) || []
   const lastIn = [...hilo].reverse().find((m) => m.direccion === 'in')
   const ventanaMs = lastIn ? lastIn.at + 24 * HOUR - Date.now() : -1
-  const abierta = ventanaMs > 0
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' })
   }, [sel, hilo.length])
 
-  const enviar = () => {
-    if (!lead || !txt.trim()) return
-    send(lead.id, { es: txt.trim(), en: txt.trim() })
-    setTxt('')
-  }
-
   const pendientes = convs.filter((c) => c.pendiente).length
+  const porCloser = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const id of porLead.keys()) {
+      const l = leads.find((x) => x.id === id)
+      if (l?.vendedorId) m[l.vendedorId] = (m[l.vendedorId] ?? 0) + 1
+    }
+    return m
+  }, [porLead, leads])
+  const closerChat = lead ? vendedorById(lead.vendedorId) : undefined
 
   const ChatHeader = lead && (
     <div className="border-b border-line">
@@ -241,6 +245,12 @@ export default function WhatsApp() {
           </div>
           <div className="truncate text-[11.5px] text-fg2">{lead.vehiculoInteres} · {lead.telefono}</div>
         </div>
+        {!closerId && closerChat && (
+          <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-warn/30 bg-[rgba(245,158,11,.08)] py-1 pl-1 pr-2.5 text-[11.5px] font-semibold text-warn md:inline-flex" data-tour="wa-supervision">
+            <Avatar initials={closerChat.avatar} color={closerChat.color} size={20} />
+            <Eye size={12} /> {t('chat.chatDe', { n: closerChat.nombre.split(' ')[0] })}
+          </span>
+        )}
         <button onClick={() => setFicha(true)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-fg2 hover:bg-surface2 xl:hidden" aria-label={t('wa.ficha')}>
           <IdCard size={18} />
         </button>
@@ -266,19 +276,7 @@ export default function WhatsApp() {
                 <span className="rounded-md bg-surface2 px-2.5 py-1 text-[11px] text-fg2">{new Date(m.at).toLocaleDateString(lang === 'es' ? 'es-US' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
               </div>
             )}
-            <div className={cn('flex', m.direccion === 'out' ? 'justify-end' : 'justify-start')}>
-              <div className={cn('anim-rise max-w-[82%] rounded-[12px] px-3 py-1.5 text-[13.5px] leading-snug shadow-sm sm:max-w-[70%]', m.direccion === 'out' ? 'rounded-tr-sm bg-[#d9fdd3] text-zinc-900 dark:bg-[#005c4b] dark:text-white' : 'rounded-tl-sm border border-line bg-surface')}>
-                {m.plantillaId && (
-                  <div className={cn('mb-0.5 flex items-center gap-1 text-[10.5px] font-semibold', m.direccion === 'out' ? 'text-emerald-800 dark:text-emerald-200' : 'text-fg2')}>
-                    {m.auto ? <Zap size={10} /> : <FileText size={10} />} {t(m.auto ? 'wa.automatico' : 'wa.plantilla')}
-                  </div>
-                )}
-                {b(m.texto)}
-                <div className="mt-0.5 flex items-center justify-end gap-1 text-[10.5px] opacity-70">
-                  {fmtHora(m.at, lang)} <Ticks m={m} />
-                </div>
-              </div>
-            </div>
+            <Bubble m={m} lead={lead!} />
           </div>
         )
       })}
@@ -286,32 +284,7 @@ export default function WhatsApp() {
     </div>
   )
 
-  const Input = lead && (
-    <div className="border-t border-line bg-surface p-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] sm:pb-2.5">
-      <div className={cn('mb-2 flex items-center gap-1.5 text-[11.5px] font-medium', abierta ? 'text-ok' : 'text-warn')}>
-        {abierta ? <ShieldCheck size={13} /> : <Lock size={13} />}
-        {abierta ? t('wa.ventanaAbierta', { h: Math.max(1, Math.floor(ventanaMs / HOUR)) }) : t('wa.ventanaCerrada')}
-        <InfoPop text={t('wa.ventanaTip')} label="" className="ml-auto h-8 min-w-[32px]" />
-      </div>
-      {abierta ? (
-        <div className="flex gap-2">
-          <Button size="icon" variant="secondary" onClick={() => setPicker(true)} aria-label={t('wa.elegirPlantilla')} data-trailer="wa-elegir-plantilla"><FileText size={17} /></Button>
-          <input
-            className="input flex-1"
-            placeholder={t('wa.escribir')}
-            value={txt}
-            onChange={(e) => setTxt(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && enviar()}
-          />
-          <Button size="icon" variant="primary" onClick={enviar} disabled={!txt.trim()} aria-label={t('wa.enviar')}><Send size={17} /></Button>
-        </div>
-      ) : (
-        <Button variant="primary" className="w-full" onClick={() => setPicker(true)} data-trailer="wa-elegir-plantilla">
-          <FileText size={16} /> {t('wa.elegirPlantilla')}
-        </Button>
-      )}
-    </div>
-  )
+  const Input = lead && <Composer lead={lead} ventanaMs={ventanaMs} onPlantillas={() => setPicker(true)} />
 
   return (
     <div>
@@ -341,19 +314,31 @@ export default function WhatsApp() {
               <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input className="input h-10 pl-9" placeholder={t('common.buscar')} value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
-            <div className="flex gap-1">
-              {(['mias', 'sin_responder', 'con_cita'] as Filtro[]).map((f) => (
-                <button key={f} onClick={() => setFiltro(f)} className={cn('h-9 flex-1 rounded-lg text-[12px] font-semibold', filtro === f ? 'bg-[rgba(59,130,246,.14)] text-accent' : 'text-fg2 hover:bg-surface2')}>
+            <div className="no-scrollbar flex gap-1 overflow-x-auto">
+              {(['mias', 'abiertas', 'sin_responder', 'con_cita'] as Filtro[]).map((f) => (
+                <button key={f} onClick={() => setFiltro(f)} className={cn('h-9 flex-1 whitespace-nowrap rounded-lg px-1 text-[11.5px] font-semibold', filtro === f ? 'bg-[rgba(59,130,246,.14)] text-accent' : 'text-fg2 hover:bg-surface2')}>
                   {t(f === 'mias' ? (closerId ? 'wa.f.mias' : 'wa.f.todas') : `wa.f.${f}`)}
                   {f === 'sin_responder' && pendientes > 0 && <span className="mono ml-1 rounded-full bg-bad px-1.5 text-[10px] text-white">{pendientes}</span>}
                 </button>
               ))}
             </div>
             {!closerId && (
-              <Select ariaLabel={t('filtro.vendedor')} value={vid} onChange={setVid}>
-                <option value="">{t('filtro.todosVendedores')}</option>
-                {vendedores.map((v) => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-              </Select>
+              <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1" data-tour="wa-closers">
+                <button onClick={() => setVid('')} className={cn('h-9 shrink-0 rounded-full border px-3 text-[12px] font-semibold', !vid ? 'border-accent bg-[rgba(59,130,246,.12)] text-accent' : 'border-line text-fg2')}>
+                  {t('chat.todosClosers')}
+                </button>
+                {vendedores.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => setVid(v.id)}
+                    className={cn('flex h-9 shrink-0 items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-[12px] font-semibold', vid === v.id ? 'border-accent bg-[rgba(59,130,246,.12)] text-accent' : 'border-line text-fg2')}
+                  >
+                    <Avatar initials={v.avatar} color={v.color} size={22} />
+                    {v.nombre.split(' ')[0]}
+                    <span className="mono text-[10.5px] opacity-70">{porCloser[v.id] ?? 0}</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -375,9 +360,12 @@ export default function WhatsApp() {
                     </span>
                     <span className="flex items-center gap-1.5">
                       {c.last && c.last.direccion === 'out' && <Ticks m={c.last} />}
-                      <span className="truncate text-[12px] text-fg2">{c.last ? b(c.last.texto) : t('wa.sinMensajes')}</span>
+                      <span className="truncate text-[12px] text-fg2">{c.last ? previewMsg(c.last, t, b) : t('wa.sinMensajes')}</span>
                     </span>
-                    {!closerId && v && <span className="mt-0.5 block truncate text-[10.5px] text-muted">{v.nombre}</span>}
+                    <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-muted">
+                      {!closerId && v && <span className="truncate">{v.nombre}</span>}
+                      {c.abierta && <span className="font-semibold text-ok">● {t('chat.abierta')}</span>}
+                    </span>
                   </span>
                   {c.pendiente && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-warn" />}
                 </button>

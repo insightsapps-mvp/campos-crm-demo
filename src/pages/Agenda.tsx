@@ -14,6 +14,7 @@ import type { Lead } from '@/mock/types'
 import { useApp } from '@/store/app'
 import { useData } from '@/store/data'
 import { useUI } from '@/store/ui'
+import { Calendario } from './agenda/Calendario'
 import { AgendaEquipo, citaTone, itemsAgenda } from './dashboard/AgendaEquipo'
 
 export default function Agenda() {
@@ -32,8 +33,6 @@ export default function Agenda() {
   const [dia, setDia] = useState(hoy.getTime())
   const quien = closerId ?? (vid || null)
 
-  const dias = useMemo(() => Array.from({ length: 7 }, (_, i) => hoy.getTime() + i * DAY), [hoy.getTime()]) // eslint-disable-line react-hooks/exhaustive-deps
-  const conteo = useMemo(() => dias.map((d) => itemsAgenda(leads, d, quien).length), [dias, leads, quien])
   const items = useMemo(() => itemsAgenda(leads, dia, quien), [leads, dia, quien])
 
   const now = Date.now()
@@ -81,22 +80,18 @@ export default function Agenda() {
         </Card>
       )}
 
-      <div className="no-scrollbar -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        {dias.map((d, i) => (
-          <button
-            key={d}
-            onClick={() => setDia(d)}
-            className={cn('flex min-h-[64px] min-w-[76px] flex-1 flex-col items-center justify-center rounded-[12px] border px-2', dia === d ? 'border-accent bg-[rgba(59,130,246,.12)] text-accent' : 'border-line bg-surface')}
-          >
-            <span className="text-[11px] font-semibold uppercase">{i === 0 ? t('common.hoy') : new Date(d).toLocaleDateString(lang === 'es' ? 'es-US' : 'en-US', { weekday: 'short' })}</span>
-            <span className="mono text-[18px] font-bold">{new Date(d).getDate()}</span>
-            <span className="text-[10.5px] text-fg2">{conteo[i]} {t('agendaPag.items')}</span>
-          </button>
-        ))}
-      </div>
+      <Calendario
+        leads={leads}
+        quien={quien}
+        dia={dia}
+        onDia={(d) => {
+          setDia(d)
+          if (window.innerWidth < 1024) setTimeout(() => document.getElementById('agenda-detalle')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+        }}
+      />
 
       <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-        <Card>
+        <Card id="agenda-detalle" className="scroll-mt-20">
           <CardHead title={new Date(dia).toLocaleDateString(lang === 'es' ? 'es-US' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })} sub={t('agendaPag.nItems', { n: items.length })} />
           {items.length === 0 ? (
             <Empty icon={<CalendarCheck2 size={26} />} title={t('agenda.sinItems')} />

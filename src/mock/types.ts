@@ -122,6 +122,14 @@ export interface Lead {
 
 export type MsgEstado = 'enviado' | 'entregado' | 'leido'
 
+export interface Adjunto {
+  tipo: 'audio' | 'imagen' | 'archivo'
+  nombre: string
+  size?: number // bytes
+  url?: string // object URL (archivos reales elegidos en la demo)
+  duracion?: number // segundos (audio)
+}
+
 export interface Mensaje {
   id: string
   leadId: string
@@ -131,6 +139,11 @@ export interface Mensaje {
   estado: MsgEstado
   plantillaId?: string
   auto?: boolean
+  adjunto?: Adjunto
+  /** 'admin' cuando lo envió un administrador desde el chat del closer */
+  enviadoPor?: 'admin'
+  /** el admin respondió "como" el closer */
+  comoCloser?: boolean
 }
 
 export type EstadoMeta = 'aprobada' | 'revision' | 'rechazada'

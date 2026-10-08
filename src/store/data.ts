@@ -28,7 +28,7 @@ interface DataState {
   agendarCita: (id: string, at: number) => void
   cancelarCita: (id: string) => void
   registrarLlamada: (id: string) => void
-  sendMessage: (leadId: string, texto: Bi, plantillaId?: string, auto?: boolean) => void
+  sendMessage: (leadId: string, texto: Bi, plantillaId?: string, auto?: boolean, extra?: Partial<Mensaje>) => void
   asignar: (ids: string[], vendedorId: string) => void
   addLeads: (ls: Lead[]) => void
   updateAutoMensaje: (id: string, patch: Partial<AutoMensaje>) => void
@@ -162,8 +162,8 @@ export const useData = create<DataState>((set, get) => {
         }
       }),
 
-    sendMessage: (leadId, texto, plantillaId, auto) => {
-      const m: Mensaje = { id: uid('m'), leadId, direccion: 'out', texto, at: Date.now(), estado: 'enviado', plantillaId, auto }
+    sendMessage: (leadId, texto, plantillaId, auto, extra) => {
+      const m: Mensaje = { id: uid('m'), leadId, direccion: 'out', texto, at: Date.now(), estado: 'enviado', plantillaId, auto, ...extra }
       set((s) => ({ mensajes: [...s.mensajes, m] }))
       patchLead(leadId, (l) => {
         if (l.primerContactoAt) return { ...l, msgsSinResponder: 0 }

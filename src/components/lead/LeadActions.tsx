@@ -179,7 +179,7 @@ export function CitaButtons({ lead, compact }: { lead: Lead; compact?: boolean }
   )
 }
 
-export function NotasBlock({ lead, autorId }: { lead: Lead; autorId: string }) {
+export function NotasBlock({ lead, autorId, sugerencias }: { lead: Lead; autorId: string; sugerencias?: string[] }) {
   const { t, b, lang: L } = useT()
   const addNota = useData((s) => s.addNota)
   const [txt, setTxt] = useState('')
@@ -191,6 +191,15 @@ export function NotasBlock({ lead, autorId }: { lead: Lead; autorId: string }) {
   }
   return (
     <div data-tour="notas">
+      {sugerencias && (
+        <div className="no-scrollbar -mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1">
+          {sugerencias.map((s) => (
+            <button key={s} onClick={() => setTxt(s)} className="h-9 shrink-0 rounded-full border border-line bg-surface2 px-3 text-[12px] text-fg2 hover:border-accent/50 hover:text-fg">
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex gap-2">
         <textarea
           value={txt}
@@ -198,6 +207,9 @@ export function NotasBlock({ lead, autorId }: { lead: Lead; autorId: string }) {
           rows={2}
           placeholder={t('lead.notaPlaceholder')}
           className="input h-auto min-h-[64px] flex-1 resize-none py-2.5"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) guardar()
+          }}
         />
         <Button variant="secondary" size="icon" onClick={guardar} aria-label={t('lead.agregarNota')} className="h-auto self-stretch">
           <MessageSquarePlus size={17} />

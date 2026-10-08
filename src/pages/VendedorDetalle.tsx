@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Funnel } from '@/components/charts'
+import { previewMsg } from '@/components/chat/Bubble'
 import { PreviewBanner } from '@/components/layout/Notices'
 import { EstadoBadge } from '@/components/lead/LeadActions'
 import { Avatar, Badge, Button, Card, CardHead, Empty, LiveTimer } from '@/components/ui'
@@ -141,7 +142,7 @@ export default function VendedorDetalle() {
                       </span>
                       <span className="block truncate text-[12px] text-fg2">
                         {last.direccion === 'in' ? '← ' : '→ '}
-                        {b(last.texto)}
+                        {previewMsg(last, t, b)}
                       </span>
                     </span>
                     <span className="shrink-0 text-[11px] text-muted">{fmtRel(last.at, lang)}</span>

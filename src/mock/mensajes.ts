@@ -85,6 +85,8 @@ function hilo(l: Lead): Mensaje[] {
   add('out', outPool[k], t)
   t += (10 + r() * 90) * MIN
   add('in', pool[1], t)
+  if (l.tradeIn && k === 0) add('in', { es: '', en: '' }, t + 2 * MIN, { adjunto: { tipo: 'imagen', nombre: 'trade-in-corolla-2016.jpg', size: 1_840_000 } })
+  if (k === 1) add('in', { es: '', en: '' }, t + 6 * MIN, { adjunto: { tipo: 'audio', nombre: 'audio.ogg', duracion: 18 + Math.floor(r() * 30) } })
   if (l.citaAt) {
     t += (4 + r() * 20) * MIN
     add('in', pool[2], t)
@@ -93,10 +95,13 @@ function hilo(l: Lead): Mensaje[] {
     add('out', { es: rellenar(plantillasIniciales[1].cuerpo.es, l, { fecha: f.es, hora: f.hora }), en: rellenar(plantillasIniciales[1].cuerpo.en, l, { fecha: f.en, hora: f.hora }) }, t, { plantillaId: 'p2', auto: true })
     t += (5 + r() * 30) * MIN
     add('in', confirmaIn, t)
+    t += (20 + r() * 60) * MIN
+    add('out', { es: 'Te dejo la cotización para que la revises antes de venir 👇', en: 'Here is the quote so you can review it before coming 👇' }, t, { adjunto: { tipo: 'archivo', nombre: 'Cotizacion_' + l.vehiculoInteres.replace(/ /g, '_') + '.pdf', size: 248_000 } })
   }
   if (l.estado === 'negociacion') {
     t = Math.max(t, (l.citaAt ?? t) + 3 * HOUR)
     add('in', negociacionIn, t)
+    add('in', { es: '', en: '' }, t + MIN, { adjunto: { tipo: 'audio', nombre: 'audio.ogg', duracion: 34 } })
     t += 12 * MIN
     add('out', negociacionOut, t)
   }
@@ -125,10 +130,10 @@ export function generarMensajes(leads: Lead[]): Mensaje[] {
     const lista = activos(v.id)
     const sinC = lista.filter((l) => l.estado === 'asignado').slice(0, v.id === DANIELA_ID ? 3 : 2)
     const resto = lista.filter((l) => l.estado !== 'asignado')
-    const conAgenda = resto.filter((l) => l.estado === 'agendado').slice(0, v.id === DANIELA_ID ? 3 : 1)
-    const neg = resto.filter((l) => l.estado === 'negociacion').slice(0, v.id === DANIELA_ID ? 2 : 1)
+    const conAgenda = resto.filter((l) => l.estado === 'agendado').slice(0, v.id === DANIELA_ID ? 3 : 2)
+    const neg = resto.filter((l) => l.estado === 'negociacion').slice(0, 2)
     const comp = resto.filter((l) => l.estado === 'comprador').slice(0, 1)
-    const cont = resto.filter((l) => l.estado === 'contactado').slice(0, v.id === DANIELA_ID ? 3 : 1)
+    const cont = resto.filter((l) => l.estado === 'contactado').slice(0, 3)
     elegidos.push(...sinC, ...conAgenda, ...neg, ...comp, ...cont)
   }
   return elegidos.flatMap(hilo)
