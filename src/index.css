@@ -166,3 +166,10 @@ body {
   .anim-drawer { animation: drawer-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   .anim-rise { animation: rise-in 0.35s ease both; }
 }
+
+/* los hijos de grid no deben estirar la pista por contenido ancho (tablas con scroll propio) */
+@layer base {
+  .grid > * {
+    min-width: 0;
+  }
+}

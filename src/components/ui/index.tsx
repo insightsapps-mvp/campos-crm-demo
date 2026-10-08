@@ -215,14 +215,14 @@ export function Segmented<T extends string>({
   dataTour?: string
 }) {
   return (
-    <div data-tour={dataTour} className={cn('inline-flex rounded-[9px] border border-line bg-surface2 p-0.5', className)}>
+    <div data-tour={dataTour} className={cn('inline-flex shrink-0 rounded-[9px] border border-line bg-surface2 p-0.5', className)}>
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           className={cn(
-            'rounded-[7px] px-2.5 font-semibold transition',
+            'whitespace-nowrap rounded-[7px] px-2.5 font-semibold transition',
             size === 'sm' ? 'h-9 min-w-[40px] text-[12px]' : 'h-10 min-w-[44px] text-[13px]',
             value === o.value ? 'bg-surface text-fg shadow-sm ring-1 ring-line dark:bg-[#27272a]' : 'text-fg2 hover:text-fg',
           )}

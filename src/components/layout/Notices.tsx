@@ -32,8 +32,8 @@ export function PreviewBanner({ id }: { id: string }) {
           <Eye size={12} /> {t('banner.previewNavegable')}
         </span>
         <span className="pill bg-surface2 text-fg2">{t('banner.datosMock')}</span>
-        <span className="min-w-0 flex-1 text-[13px] font-semibold">{t('banner.titulo')}</span>
-        <ChevronDown size={16} className={cn('text-fg2 transition', !collapsed && 'rotate-180')} />
+        <span className="order-last basis-full text-[13px] font-semibold sm:order-none sm:min-w-0 sm:flex-1 sm:basis-auto">{t('banner.titulo')}</span>
+        <ChevronDown size={16} className={cn('ml-auto text-fg2 transition sm:ml-0', !collapsed && 'rotate-180')} />
       </button>
       {!collapsed && (
         <ul className="grid gap-2 px-4 pb-4 md:grid-cols-3">

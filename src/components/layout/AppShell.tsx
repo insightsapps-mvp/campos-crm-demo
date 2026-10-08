@@ -266,6 +266,10 @@ function MoreSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useT()
   const go = useMenuNav()
   const all = navFor(role).flatMap((i) => (i.children ? i.children : [i]))
+  // al cambiar de rol se cierra el sheet
+  useEffect(() => {
+    onClose()
+  }, [role, onClose])
   return (
     <Sheet open={open} onClose={onClose} title={t('nav.menu')}>
       <div className="grid grid-cols-2 gap-2 pt-2">
